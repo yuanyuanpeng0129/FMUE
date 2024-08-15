@@ -1,15 +1,12 @@
 # coding:gbk
-import os
 import argparse
 import torch
 import tqdm
 import numpy as np
-import torch.nn as nn
 from torch.utils.data import DataLoader
-import models_vit
 from util.datasets import build_dataset
 from torch.nn import functional as F
-from sklearn.metrics import roc_curve, auc, accuracy_score,average_precision_score,precision_score,f1_score,recall_score
+from sklearn.metrics import roc_curve, auc,f1_score
 import matplotlib.pyplot as plt
 from scipy import interp
 import csv
@@ -21,7 +18,8 @@ from sklearn.metrics import confusion_matrix
 from util.pos_embed import interpolate_pos_embed
 import util.misc as misc
 import seaborn as sns
-import sys
+import vit_model
+
 def get_args_parser():
     parser = argparse.ArgumentParser('MAE fine-tuning for image classification', add_help=False)
     parser.add_argument('--batch_size', default=1, type=int,
@@ -50,14 +48,14 @@ def get_args_parser():
                         help='Use class token instead of global pool for classification')
 
     # Dataset parameters
-    parser.add_argument('--data_path', default='../OCT_data/', type=str,
+    parser.add_argument('--data_path', default='./OCT_data/', type=str,
                         help='dataset path')####���ǵ�OCT����·��
-    parser.add_argument('--nb_classes', default=11, type=int,
+    parser.add_argument('--nb_classes', default=16, type=int,
                         help='number of the classification types')
 
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
-    parser.add_argument('--seed', default=0, type=int)
+    parser.add_argument('--seed', default=1, type=int)
 
     parser.add_argument('--eval', action='store_true',
                         help='Perform evaluation only')
@@ -154,7 +152,6 @@ def val(val_dataloader, model, args, mode, device):
     label_confu = []
     label_list = []
 
-    correct = 0.0
     num_total = 0
     tbar = tqdm.tqdm(val_dataloader, desc='\r')  # ����һ��������ʾ��Ϣ��ֻ��Ҫ��װ����ĵ����� tqdm(iterator)��desc������ǰ׺
 
@@ -171,8 +168,6 @@ def val(val_dataloader, model, args, mode, device):
             S = torch.sum(alpha[0], dim=1, keepdim=True)
             E = alpha[0] - 1
             pred = E / (S.expand(E.shape))
-            
-            #label_pred = np.argmax(b.cpu().data.numpy())
 
             data_bach = pred.size(0)
             num_total += data_bach
@@ -208,7 +203,7 @@ def main(args=None):
     device = torch.device(args.device)
     args.device = device
 
-    model = models_vit.__dict__[args.model](
+    model = vit_model.__dict__[args.model](
         img_size=args.input_size,
         num_classes=args.nb_classes,
         drop_path_rate=args.drop_path,
@@ -301,13 +296,12 @@ def main(args=None):
                    ''.format(roc_auc_Pri["macro"]),
              color='navy', linestyle=':', linewidth=4)
 
-    colors = cycle(['r', 'aqua', 'darkorange', 'cornflowerblue', 'yellow', 'peru', 'black', 'violet', 'crimson','deeppink','brown'])
-    Clases_name = ['normal','acute VKH','acute CSC', 'acute RAO', 'acute RVO',  'AMD','DR',
-                   'macular-off RRD', 'mCNV', 'MTM','RP']
+    colors = cycle(['r', 'aqua', 'darkorange', 'cornflowerblue', 'yellow', 'peru', 'black', 'violet', 'crimson','deeppink','brown','gray','magenta','limegreen','c','m'])
+    Clases_name = ['Normal','dAMD','nAMD','PCV','DME','DR without ME','iERM','iMH','MTM','mCNV','RD','acute CSC', 'acute RAO', 'acute RVO','acute VKH','RP']
 
     for i, color in zip(range(args.nb_classes), colors):
         plt.plot(fpr_Pri[i], tpr_Pri[i], color=color, lw=lw,
-                 label='{0} (AUC = {1:0.4f})'.format(Clases_name[i], roc_auc_Pri[i]))
+                 label='{0} ({1:0.4f})'.format(Clases_name[i], roc_auc_Pri[i]))
 
     plt.plot([0, 1], [0, 1], 'k--', lw=lw)
     plt.xlim([0.0, 1.0])
@@ -327,8 +321,8 @@ def main(args=None):
 
 
     all_metrics = [Sens,Precisions,F1_scores,Spes]
-    header = ['Metrics','Normal','acute VKH','acute CSC', 'acute RAO', 'acute RVO',  'AMD','DR',
-                   'Macular-off RRD', 'mCNV', 'MTM','RP']
+    header = ['Metrics','Normal','dAMD','nAMD','PCV','DME','DR without ME','iERM','iMH','MTM','mCNV','RD','acute CSC', 'acute RAO', 'acute RVO','acute VKH','RP']
+
     with open("./results/{}.csv".format(args.method), 'w',newline='') as f:
         writer = csv.writer(f)
         writer.writerow(header)

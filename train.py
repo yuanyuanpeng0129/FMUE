@@ -18,10 +18,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 import timm
 
-#assert timm.__version__ == "0.3.2" # version check
 from timm.models.layers import trunc_normal_
 from timm.data.mixup import Mixup
-from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
+#from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 
 import util.lr_decay as lrd
 import util.misc as misc
@@ -29,7 +28,7 @@ from util.datasets import build_dataset
 from util.pos_embed import interpolate_pos_embed
 from util.misc import NativeScalerWithGradNormCount as NativeScaler
 
-import models_vit
+import vit_model
 
 from engine_finetune import train, evaluate
 
@@ -105,7 +104,7 @@ def get_args_parser():
 
     # * Finetuning params
     parser.add_argument('--finetune', default='./weight/RETFound_oct_weights.pth',type=str,
-                        help='finetune from checkpoint')####Ԥѵ��Ȩ��
+                        help='finetune from checkpoint')####Ԥѵ  Ȩ  
     parser.add_argument('--task', default='FMUE',type=str,
                         help='finetune from checkpoint')
     parser.add_argument('--global_pool', action='store_true')
@@ -114,15 +113,15 @@ def get_args_parser():
                         help='Use class token instead of global pool for classification')
 
     # Dataset parameters
-    parser.add_argument('--data_path', default='../OCT_data/', type=str,
-                        help='dataset path')####���ǵ�OCT����·��
-    parser.add_argument('--nb_classes', default=11, type=int,
+    parser.add_argument('--data_path', default='./OCT_data/', type=str,
+                        help='dataset path')####   ǵ OCT    ·  
+    parser.add_argument('--nb_classes', default=16, type=int,
                         help='number of the classification types')
 
     parser.add_argument('--output_dir', default='./FMUE',
-                        help='path where to save, empty for no saving')###����ģ�͵�·��
+                        help='path where to save, empty for no saving')###    ģ ͵ ·  
     parser.add_argument('--log_dir', default='./log_',
-                        help='path where to tensorboard log')###����ѵ����־
+                        help='path where to tensorboard log')###    ѵ    ־
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--seed', default=1, type=int)
@@ -151,9 +150,9 @@ def get_args_parser():
     
     parser.add_argument('--fulltune', default=False, action='store_true', help='full finetune model')
     parser.add_argument('--save_model_path', default='./model_save',
-                        help='path where to save, empty for no saving')###����ģ�͵�·��
+                        help='path where to save, empty for no saving')###    ģ ͵ ·  
     parser.add_argument('--net_work', default='FMUE',
-                        help='path where to save, empty for no saving')###����ģ�͵�·��
+                        help='path where to save, empty for no saving')###    ģ ͵ ·  
 
     return parser
 
@@ -244,7 +243,7 @@ def main(args):
             prob=args.mixup_prob, switch_prob=args.mixup_switch_prob, mode=args.mixup_mode,
             label_smoothing=args.smoothing, num_classes=args.nb_classes)
     
-    model = models_vit.__dict__[args.model](
+    model = vit_model.__dict__[args.model](
         img_size=args.input_size,
         num_classes=args.nb_classes,
         drop_path_rate=args.drop_path,
@@ -312,7 +311,7 @@ def main(args):
     optimizer = torch.optim.AdamW(param_groups, lr=args.lr)
     loss_scaler = NativeScaler()
     
-    weights = [1.34, 1.75, 3.89, 3.44, 2.12, 1.0, 1.0, 2.13, 9.63, 2.16, 1.79]
+    weights = [1.00, 2.61, 2.36, 1.89, 2.27, 3.44, 3.61, 9.59, 1.60, 6.99, 1.46, 2.88,2.56,1.57,1.30,1.34]#classes weights
     class_weights = torch.FloatTensor(weights).to(device)
     criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
     

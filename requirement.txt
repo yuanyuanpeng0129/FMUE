@@ -1,0 +1,17 @@
+torch==2.0.1+cu117
+torchvision==0.15.2+cu117
+torchaudio==0.9.1
+opencv-python==4.6.0.66
+pandas==1.4.3
+Pillow==10.0.0
+protobuf==4.23.4
+pycm==4.0
+pydicom==2.3.0##
+scikit-image==0.21.2
+scikit-learn==1.0.2
+scipy==1.9.1
+tensorboard==2.15.0
+tensorboard-data-server==0.7.2
+tensorboard-plugin-wit==1.8.0
+timm==0.5.4
+tqdm==4.66.1

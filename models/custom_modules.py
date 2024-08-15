@@ -1,27 +1,26 @@
 import torch
 import torch.nn as nn
 from timm.models.layers import DropPath
-import loralib as lora
 
 class Attention(nn.Module):
     def __init__(self, 
                  dim,   #    token  dim
-                 num_heads=8,  #  ͷע      head ĸ   
-                 qkv_bias=False,  #      qkvʱ Ƿ ʹ  ƫ ã Ĭ Ϸ 
+                 num_heads=8,  #  number of heads   
+                 qkv_bias=False,
                  attn_drop=0., 
                  proj_drop=0.):
         super().__init__()
         r = 4
         self.dim = dim
         self.num_heads = num_heads
-        head_dim = dim // num_heads  #    ÿһ  head  Ҫ     dim
+        head_dim = dim // num_heads  #Dimension of the Head
         self.scale = head_dim ** -0.5  #head_dim  -0.5 η     1/    d_k       ۹ ʽ  ķ ĸ    d_k
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)  #qkv  ͨ  1  ȫ   Ӳ    Ϊdim  3dim   г ʼ   ģ Ҳ    ʹ  3  ȫ   Ӳ    Ϊdim  dim   г ʼ        û      
+        # LoRA layers
         self.linear_a_q = nn.Linear(dim, r, bias=False)
         self.linear_b_q = nn.Linear(r, dim, bias=False)
         self.linear_a_v = nn.Linear(dim, r, bias=False)
         self.linear_b_v = nn.Linear(r, dim, bias=False)
-        self.w_identity = torch.eye(dim)
         self.attn_drop = nn.Dropout(attn_drop)#    dp       attn_drop
         self.proj = nn.Linear(dim, dim)  # ٶ   һ  ȫ   Ӳ㣬     ÿһ  head Ľ      ƴ ӵ ʱ  ˵  Ǹ     W^O
         self.proj_drop = nn.Dropout(proj_drop)#    dp       proj_drop
@@ -76,22 +75,6 @@ class Mlp(nn.Module):
 #ȫ   Ӳ 2      ڵ          ڵ      1/4
     def __init__(self, dim, hidden_dim, dropout = 0.):
         super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(dim, hidden_dim),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, dim),
-            nn.Dropout(dropout)
-        )
-    def forward(self, x):
-        return self.net(x)
-
-class Mlp(nn.Module):
-#ȫ   Ӳ 1+GELU+dropout+ȫ   Ӳ 2+dropout
-#ȫ   Ӳ 1      ڵ          ڵ      4      mlp_ratio=4.
-#ȫ   Ӳ 2      ڵ          ڵ      1/4
-    def __init__(self, dim, hidden_dim, dropout = 0.):
-        super().__init__()
         self.fc1 = nn.Linear(dim, hidden_dim)
         self.act = nn.GELU()
         self.drop1 = nn.Dropout(dropout)
@@ -129,3 +112,4 @@ class Block(nn.Module):
 
         x = residual + x
         return x
+

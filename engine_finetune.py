@@ -5,7 +5,6 @@
 
 import math
 import sys
-import csv
 import os
 import torch
 import torch.nn as nn
@@ -15,34 +14,10 @@ from timm.utils import accuracy
 from typing import Iterable, Optional
 import util.misc as misc
 import util.lr_sched as lr_sched
-from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, average_precision_score,multilabel_confusion_matrix
 from pycm import *
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import metrics
-
-# loss function
-def KL(alpha, c, device):
-    beta = torch.ones((1, c)).to(device)
-    S_alpha = torch.sum(alpha, dim=1, keepdim=True)
-    S_beta = torch.sum(beta, dim=1, keepdim=True)
-    lnB = torch.lgamma(S_alpha) - torch.sum(torch.lgamma(alpha), dim=1, keepdim=True)
-    lnB_uni = torch.sum(torch.lgamma(beta), dim=1, keepdim=True) - torch.lgamma(S_beta)
-    dg0 = torch.digamma(S_alpha)
-    dg1 = torch.digamma(alpha)
-    kl = torch.sum((alpha - beta) * (dg1 - dg0), dim=1, keepdim=True) + lnB + lnB_uni
-    return kl
-
-
-def un_loss(p, alpha, c, global_step, annealing_step, device):
-    S = torch.sum(alpha, dim=1, keepdim=True)
-    E = alpha - 1
-    label = F.one_hot(p, num_classes=c)
-    A = torch.sum(label * (torch.digamma(S) - torch.digamma(alpha)), dim=1, keepdim=True)
-    annealing_coef = min(1, global_step / annealing_step)
-    alp = E * (1 - label) + 1
-    B = annealing_coef * KL(alp, c, device)
-    return (A + B)
+from loss import un_loss
 
 def train(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -154,7 +129,6 @@ def evaluate(args,data_loader, model, device, task, epoch, mode, num_class):
         target = batch[-1]
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
-        true_label=F.one_hot(target.to(torch.int64), num_classes=num_class)
 
         # compute output
         with torch.cuda.amp.autocast():
