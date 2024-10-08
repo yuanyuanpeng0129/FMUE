@@ -49,7 +49,7 @@ def get_args_parser():
 
     # Dataset parameters
     parser.add_argument('--data_path', default='./OCT_data/', type=str,
-                        help='dataset path')####���ǵ�OCT����·��
+                        help='dataset path')
     parser.add_argument('--nb_classes', default=16, type=int,
                         help='number of the classification types')
 
@@ -68,9 +68,9 @@ def get_args_parser():
     parser.set_defaults(pin_mem=True)
     
     parser.add_argument('--save_path', default='./trained/FMUE.pth',
-                        help='path where to save model path')###����ģ�͵�·��
+                        help='path where to save model path')
     parser.add_argument('--method', default='FMUE',
-                        help='path where to save the test result')###����ģ�͵�·��
+                        help='path where to save the test result')
 
     return parser
 

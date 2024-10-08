@@ -1,8 +1,3 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-# Partly revised by YZ @UCL&Moorfields
-# --------------------------------------------------------
-
 import builtins
 import datetime
 import os
@@ -14,7 +9,6 @@ import torch
 import torch.distributed as dist
 #from torch._six import inf
 from torch import inf
-import loralib as lora
 
 class SmoothedValue(object):
     """Track a series of values and provide access to smoothed values over a
@@ -322,7 +316,6 @@ def save_model_epoch(args, epoch, model, model_without_ddp, optimizer, loss_scal
             'args': args,
         }
         if epoch>=10:
-            #save_on_master(to_save, checkpoint_path)
             torch.save(to_save, os.path.join(output_dir,args.task+'checkpoint_{}.pth'.format(epoch_name)))
     else:
         client_state = {'epoch': epoch}

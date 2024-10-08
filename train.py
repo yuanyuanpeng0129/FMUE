@@ -1,7 +1,5 @@
 # coding:gbk
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-# Partly revised by YZ @UCL&Moorfields
+# Partly revised by YP @Anhui Medical University
 # --------------------------------------------------------
 
 import argparse

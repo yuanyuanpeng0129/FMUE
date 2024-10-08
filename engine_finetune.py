@@ -1,6 +1,4 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-# Partly revised by YZ @UCL&Moorfields
+# Partly revised by YP @Anhui Medical University
 # --------------------------------------------------------
 
 import math
@@ -17,7 +15,7 @@ import util.lr_sched as lr_sched
 from pycm import *
 import numpy as np
 from sklearn import metrics
-from loss import un_loss
+from util.loss import un_loss
 
 def train(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,

@@ -1,6 +1,4 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-# Partly revised by YZ @UCL&Moorfields
+# Partly revised by YP @Anhui Medical University
 # --------------------------------------------------------
 
 from functools import partial
@@ -10,7 +8,7 @@ import torch.nn as nn
 from easydict import EasyDict
 
 import timm.models.vision_transformer
-from models.custom_modules  import Block
+from custom_modules  import Block
 
 
 class VisionTransformer(timm.models.vision_transformer.VisionTransformer):
@@ -68,25 +66,6 @@ class VisionTransformer(timm.models.vision_transformer.VisionTransformer):
             outcome = x[:, 0]
 
         return outcome
-    
-    def get_last_selfattention(self, x):
-        B = x.shape[0]
-        x = self.patch_embed(x)
-
-        cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
-        x = torch.cat((cls_tokens, x), dim=1)
-        x = x + self.pos_embed
-        x = self.pos_drop(x)
-
-        for i, blk in enumerate(self.blocks):
-            print(len(self.blocks))
-            print(i)
-            if i < len(self.blocks) - 1:
-                x = blk(x,return_attention=False)
-            else:
-                # return attention of the last block
-                return blk(x, return_attention=True)
-
 
 def vit_large_patch16(**kwargs):
     model = VisionTransformer(
